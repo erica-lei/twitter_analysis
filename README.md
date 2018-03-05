@@ -11,16 +11,16 @@ With this information, I created a scatter plot that visualized the tweets that 
 
 ### Results and Analysis
 
-Based on the data collected, I was able to find that many of the news organization has neutral sentiment. However, these news organizations also had positive and negative sentiment polarity:
+Based on the data collected, I was able to find that many of the news organization has neutral sentiment. However, other than the neutral sentiment, I also found trends regarding tweet polarity of news organizations:
 
-1. When averaging out the total overall sentiment, FoxTV shows the highest positive sentiment while BBC shows the highest negative sentiment in their Tweets. 
+1. Based on the last 100 tweets extracted from new organizations, after averaging the total overall sentiment, FoxTV has the highest positive sentiment while CNN shows the highest negative sentiment in their Tweets. After running this multiple times, FoxTV has greatest consistency for positive sentiment.
 
-2. Based on the scatter diagram that consists of 100 tweets for each news organization, FoxTV has the least negative sentiment. 
+2. Based on the scatter diagram that consists of 100 most recent tweets for each news organization, FoxTV has the least negative sentiment. 
 
-3. The scatter diagram shows that NY Times seems to have the least volatility in their sentiment analysis. Most of the tweet polarity is visualized in one row. NY Times has their polarity results at -0.15. 
+3. The scatter diagram shows that NY Times seems to have the least volatility in their sentiment analysis. Most of the tweet polarity is located at -0.15 and at 0.47. 
 
 
-Limitations of the data may include,the small sample size. Furthermore, variables such as the media's differing internal structures, as well as employees who manage the twitter page differ across news organizations. News anchors may present their information differently than those whom manage and post the news content on twitter. 
+Limitations of the data may include,the small sample size and as a result, the sentiment analysis will constantly change. Furthermore, variables such as the media's differing internal structures, as well as employees who manage the twitter page differ across news organizations. News anchors may present their information differently than those whom manage and post the news content on twitter. 
 
 
 ```python
@@ -63,24 +63,11 @@ sentiment_array=[]
 compound_overall=[]
 
 
-# "Real Person" Filters
-min_tweets = 5
-max_tweets = 10000
-max_followers = 2500
-max_following = 2500
-lang = "en"
-
-sentiment_list=""
-
 #create a for loop for each news channel
 for target in target_users:
     counter=0
     oldest_tweet=None
-   
-    compound_list = []
-    positive_list = []
-    negative_list = []
-    neutral_list = []
+
     
     #make two requests of 50 tweets each
     for x in range(2):
@@ -127,7 +114,6 @@ sentiment_df=pd.DataFrame.from_dict(sentiment_array)
 sentiment_df.head()
 
 sentiment_df.to_csv("tweet_sentiment_csv",index=False)
-
 ```
 
 
@@ -170,27 +156,27 @@ total_overall_senti
     <tr>
       <th>0</th>
       <td>@BBC</td>
-      <td>-0.80200</td>
+      <td>0.00000</td>
     </tr>
     <tr>
       <th>1</th>
       <td>@CBS</td>
-      <td>-0.00835</td>
+      <td>-0.11315</td>
     </tr>
     <tr>
       <th>2</th>
       <td>@CNN</td>
-      <td>0.36755</td>
+      <td>-0.26335</td>
     </tr>
     <tr>
       <th>3</th>
       <td>@FoxTV</td>
-      <td>0.39625</td>
+      <td>0.27870</td>
     </tr>
     <tr>
       <th>4</th>
       <td>@NYTimes</td>
-      <td>-0.38275</td>
+      <td>-0.07655</td>
     </tr>
   </tbody>
 </table>
@@ -218,7 +204,7 @@ sns.lmplot(x="Number Tweets Ago", y="Compound List", data=sentiment_df,
                "alpha":0.7
            })
 
-plt.title("Sentiment Analysis of Media Tweets 3/4/2018", size=16)
+plt.title("Sentiment Analysis of Media Tweets \n 03 / 04 / 2018", size=16)
 plt.ylabel("Tweet Polarity", size=13)
 plt.xlabel("Tweets Ago", size=13)
 
@@ -231,35 +217,58 @@ plt.savefig("sentimentfig")
 
 
 ```python
-xvalues = total_overall_senti["Users"]
-x_axis = np.arange(0,len(xvalues),1)
-y_axis = total_overall_senti["Overall Sentiment"]
-#y_axis = [bbc_senti,cbs_senti,cnn_senti,fox_senti,nyt_senti]
+y_axis = total_overall_senti["Overall Sentiment"] 
+x_labels = total_overall_senti["Users"]
 
 
-width=0.55
+plt.figure(figsize=(9, 6))
 
-fig, ax = plt.subplots()
-
-rects1 = ax.bar(x_axis, y_axis, width, color="pink", alpha=0.5)
-rects1[0].set_color("red")
-rects1[1].set_color("gold")
-rects1[2].set_color("teal")
-rects1[3].set_color("skyblue")
-rects1[4].set_color("purple")
-
-ax.set_xticks(x_axis+width/20)
-ax.set_xticklabels(xvalues)
+ax = y_axis.plot(kind='bar')
+ax.set_xticklabels(x_labels)
 ax.axhline(y=0, linestyle="dashed", color="black",linewidth=0.5)
-ax.set_title("Overall Media Sentiment on Twitter \n 3/4/2018", size = 16)
-plt.ylim((min(y_axis) - .2) , (max(y_axis)+ .2))
+
+rects = ax.patches
+
+rects[0].set_color("red")
+rects[1].set_color("gold")
+rects[2].set_color("teal")
+rects[3].set_color("skyblue")
+rects[4].set_color("purple")
+
+
+
+ax.set_title("Overall Media Sentiment on Twitter \n 03 / 04 / 2018", size = 16)
+
 plt.xlabel("Users", size = 14)
+plt.xticks(rotation=0)
 plt.ylabel("Tweet Polarity", size = 14)
+plt.ylim((min(y_axis) - .2) , (max(y_axis)+ .2))
 plt.grid(linestyle="dashed",color="skyblue",alpha=0.3)
 
 
+# For each bar: Place a label
+for rect in rects:
+    y_value = rect.get_height()
+    x_value = rect.get_x() + rect.get_width() / 2
+    space = 5
+    va = 'bottom'
+    if y_value < 0:
+        # Invert space to place label below
+        space *= -1
+        # Vertically align label at top
+        va = 'top'
+    label = "{:.3f}".format(y_value)
 
-
+    # Create annotation
+    plt.annotate(
+        label,                      
+        (x_value, y_value),        
+        xytext=(0, space),         
+        textcoords="offset points",
+        ha='center',               
+        va=va)                      
+                                    
+        
 plt.savefig("overallsentiment")
 ```
 
